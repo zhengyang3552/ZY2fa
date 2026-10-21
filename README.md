@@ -2,6 +2,8 @@
 
 纯前端 TOTP 验证器 · Material 3 设计系统 · 零运行时依赖
 
+**[在线使用](https://zhengyang3552.github.io/ZY2fa/)** · **[CI](https://github.com/zhengyang3552/ZY2fa/actions/workflows/ci.yml)** — 密钥只留在你自己的浏览器里，页面不发起任何网络请求。
+
 ```
 npm start                        # 开发预览 → http://localhost:5173（不打包，直接跑源码）
 npm test                         # 67 项测试
