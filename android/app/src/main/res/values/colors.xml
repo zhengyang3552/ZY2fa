@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 统一品牌蓝（与 ZYEmail / RemoteFileManager / ZYNotificationHistory 同源） -->
+    <color name="ic_launcher_background">#FF0B57D0</color>
+    <color name="brand_primary">#FF0B57D0</color>
+</resources>

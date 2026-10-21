@@ -1,11 +1,13 @@
 name: CI
 
-# 每次推送到 main、每个 PR 都跑：校验 → 测试 → 构建 → 发布产物。
-# 构建产物（dist/）在 main 上自动部署到 GitHub Pages。
+# 触发：推送到 main（质量门 + Pages 部署）、v* 标签（质量门 + Android 发版）、PR、手动。
+# 网页产物（dist/）在 main 上自动部署到 GitHub Pages；
+# Android 壳（android/）把 dist/ 打进 APK：main 上出 Debug 包，v* 标签出固定签名 Release 包。
 
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -104,6 +106,170 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
+  # ---------------------------------------------------------------------------
+  # Android 壳：把网页产物打进完全离线的 WebView APK（不申请 INTERNET 权限）
+  android:
+    name: 构建 Android APK
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 配置 JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: 配置 Gradle（含依赖缓存）
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: 授予 gradlew 执行权限
+        run: chmod +x android/gradlew
+
+      - name: 补齐 Android SDK 组件
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            yes | "$SDKMANAGER" "platform-tools" \
+              "platforms;android-34" "build-tools;34.0.0" > /dev/null
+          else
+            echo "sdkmanager not found, fallback to preinstalled SDK"
+          fi
+
+      # 网页产物打进 APK 的 assets：App 完全离线，密钥不出设备
+      - name: 填充网页资源
+        run: |
+          mkdir -p android/app/src/main/assets/www
+          cp -r dist/* android/app/src/main/assets/www/
+          ls android/app/src/main/assets/www/
+
+      - name: 构建 Debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      - name: 写入构建摘要
+        run: |
+          APK=$(find android/app/build/outputs/apk/debug -name '*.apk' | head -1)
+          {
+            echo "### Debug APK"
+            echo "- 产物：\`$APK\`"
+            echo "- 大小：$(du -h "$APK" | cut -f1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传 Debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: ZY2fa-debug
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # v* 标签：构建固定签名的 Release APK 并发布到 GitHub Releases
+  release:
+    name: 发布 Release APK
+    needs: [build, android]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 配置 JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: 配置 Gradle（含依赖缓存）
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: 授予 gradlew 执行权限
+        run: chmod +x android/gradlew
+
+      - name: 补齐 Android SDK 组件
+        run: |
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            yes | "$SDKMANAGER" "platform-tools" \
+              "platforms;android-34" "build-tools;34.0.0" > /dev/null
+          fi
+
+      # 从仓库 Secret 还原固定发布 keystore（与其他三个 ZY 系列应用共用同一把，
+      # 缺失则直接失败，绝不出随机签名的包；配置方法见 docs/SIGNING.md）
+      - name: 还原固定签名 keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::未配置 KEYSTORE_BASE64 等 Secret，无法产出签名固定的 Release 包（配置方法见 docs/SIGNING.md）"
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > release.keystore
+          {
+            echo "KEYSTORE_PATH=release.keystore"
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "KEY_ALIAS=$KEY_ALIAS"
+            echo "KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: 填充网页资源
+        run: |
+          mkdir -p android/app/src/main/assets/www
+          cp -r dist/* android/app/src/main/assets/www/
+
+      - name: 构建 Release APK
+        working-directory: android
+        env:
+          KEYSTORE_PATH: ../release.keystore
+        run: ./gradlew --no-daemon --stacktrace assembleRelease
+
+      # 输出签名证书 SHA-256 到 Step Summary：这是固定校验值，
+      # 每次发版应完全一致，用户可据此核对更新包来源
+      - name: 校验签名指纹
+        run: |
+          set -euo pipefail
+          APK=$(find android/app/build/outputs/apk/release -name '*.apk' | head -1)
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)
+          "$APKSIGNER" verify --print-certs "$APK" > certs.txt
+          SHA256=$(grep -oE 'SHA-256 digest: .*' certs.txt | head -1 | cut -d' ' -f3-)
+          {
+            echo "### 签名指纹（固定校验值）"
+            echo '```'
+            echo "SHA-256: $SHA256"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 重命名 APK（带版本号）
+        run: |
+          mkdir -p dist-apk
+          for f in android/app/build/outputs/apk/release/*.apk; do
+            mv "$f" "dist-apk/ZY2fa-${GITHUB_REF_NAME}-release.apk"
+          done
+          ls -lh dist-apk/
+
+      - name: 创建 Release 并附加 APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-apk/*.apk
+          generate_release_notes: true
 
   # ---------------------------------------------------------------------------
   deploy:
