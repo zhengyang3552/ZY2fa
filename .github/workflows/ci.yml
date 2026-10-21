@@ -133,6 +133,12 @@ jobs:
       - name: 授予 gradlew 执行权限
         run: chmod +x android/gradlew
 
+      - name: 下载网页构建产物
+        uses: actions/download-artifact@v7
+        with:
+          name: zy2fa-dist
+          path: dist
+
       - name: 补齐 Android SDK 组件
         run: |
           SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
@@ -199,6 +205,12 @@ jobs:
 
       - name: 授予 gradlew 执行权限
         run: chmod +x android/gradlew
+
+      - name: 下载网页构建产物
+        uses: actions/download-artifact@v7
+        with:
+          name: zy2fa-dist
+          path: dist
 
       - name: 补齐 Android SDK 组件
         run: |
