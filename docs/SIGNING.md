@@ -12,6 +12,16 @@
 52:C7:67:37:D2:2A:A3:E7:F2:BF:1A:C9:8E:9F:DB:5F:D4:77:60:34:61:22:64:E6:83:21:3C:44:D2:70:A1:B4
 ```
 
+## Debug 包签名（CI）
+
+CI 中 `assembleDebug` 产出的 debug 包**同样使用上面的固定签名**（Secret 注入后，
+`debug` buildType 自动挂上 `signingConfigs.release`），因此：
+
+- debug 包与 release 包可以互相覆盖安装升级
+- 每次构建的 debug 包签名一致，不再依赖 runner 随机生成的调试密钥
+- Secret 未配置时 CI 会告警并退回随机调试签名（不阻塞质量门）
+- 每次 CI 的 Step Summary 会输出当前包的签名证书 SHA-256，应恒等于上面的固定值
+
 ## keystore 与 Secrets 的关系
 
 - keystore 原件由仓库所有者本地保管（**不要提交进仓库**）

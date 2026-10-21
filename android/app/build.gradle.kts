@@ -25,7 +25,7 @@ android {
         create("release") {
             val ksPath = System.getenv("KEYSTORE_PATH")
             if (ksPath != null) {
-                storeFile = file(ksPath)
+                storeFile = rootProject.file(ksPath)
                 storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
                 keyAlias = System.getenv("KEY_ALIAS") ?: ""
                 keyPassword = System.getenv("KEY_PASSWORD") ?: ""
@@ -42,6 +42,13 @@ android {
             )
             // 仅在提供签名文件时启用固定签名，保证所有版本的签名证书一致，
             // 用户可以稳定地覆盖安装与升级（配置方法见 docs/SIGNING.md）。
+            if (System.getenv("KEYSTORE_PATH") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+        debug {
+            // CI 提供签名环境（KEYSTORE_PATH）时，debug 包同样使用固定签名；
+            // 本地未设置时保持默认调试签名，不影响日常开发
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }

@@ -150,6 +150,28 @@ jobs:
             echo "sdkmanager not found, fallback to preinstalled SDK"
           fi
 
+      # debug 包同样使用固定签名：还原 keystore 后，build.gradle 的 debug
+      # buildType 会自动挂上同一把证书；Secret 缺失时退回默认调试签名并告警
+      # （PR 来自 fork 等场景拿不到 Secrets，不能因此挡住质量门）
+      - name: 还原固定签名 keystore（debug 包同样签名）
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::warning::未配置 KEYSTORE_BASE64 等 Secret，本次 debug 包将使用随机调试签名（配置方法见 docs/SIGNING.md）"
+            exit 0
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > android/release.keystore
+          {
+            echo "KEYSTORE_PATH=release.keystore"
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "KEY_ALIAS=$KEY_ALIAS"
+            echo "KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
       # 网页产物打进 APK 的 assets：App 完全离线，密钥不出设备
       - name: 填充网页资源
         run: |
@@ -160,6 +182,23 @@ jobs:
       - name: 构建 Debug APK
         working-directory: android
         run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      # 输出 debug 包签名证书 SHA-256 到 Step Summary：应与 Release 包
+      # 完全一致（固定校验值），证明固定签名在 debug 构建上同样生效
+      - name: 校验签名指纹
+        if: env.KEYSTORE_PATH != ''
+        run: |
+          set -euo pipefail
+          APK=$(find android/app/build/outputs/apk/debug -name '*.apk' | head -1)
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)
+          "$APKSIGNER" verify --print-certs "$APK" > certs.txt
+          SHA256=$(grep -oE 'SHA-256 digest: .*' certs.txt | head -1 | cut -d' ' -f3-)
+          {
+            echo "### Debug APK 签名指纹（固定校验值）"
+            echo '```'
+            echo "SHA-256: $SHA256"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 写入构建摘要
         run: |
@@ -234,7 +273,7 @@ jobs:
             echo "::error::未配置 KEYSTORE_BASE64 等 Secret，无法产出签名固定的 Release 包（配置方法见 docs/SIGNING.md）"
             exit 1
           fi
-          echo "$KEYSTORE_B64" | base64 -d > release.keystore
+          echo "$KEYSTORE_B64" | base64 -d > android/release.keystore
           {
             echo "KEYSTORE_PATH=release.keystore"
             echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
@@ -249,8 +288,6 @@ jobs:
 
       - name: 构建 Release APK
         working-directory: android
-        env:
-          KEYSTORE_PATH: ../release.keystore
         run: ./gradlew --no-daemon --stacktrace assembleRelease
 
       # 输出签名证书 SHA-256 到 Step Summary：这是固定校验值，
