@@ -98,33 +98,36 @@ const palette = (name, hue, chroma, tones) =>
 /* Palettes                                                            */
 /* ------------------------------------------------------------------ */
 
-// Brand direction: a trustworthy indigo (security / credentials), with a
-// teal tertiary for "live / healthy / counting down" signals and a warm
-// error ramp that stays clearly distinct from the tertiary accent.
+// Brand direction: unified ZY-series blue (#0B57D0, same seed as ZYEmail /
+// RemoteFileManager / ZYNotificationHistory), derived via the M3 tonal-spot
+// rules: secondary sits 38° away at low chroma (kept from the original
+// design to avoid container collisions after gamut clamping), tertiary sits
+// +60° away as the accent, and the error/success/warning ramps keep the
+// unified semantic seeds (#B3261E / #146C2E / #8B5000).
 const HUES = {
-  primary: 262, // indigo - brand, primary actions
+  primary: 260.6, // #0B57D0 - unified brand blue
   // Secondary sits 38° away at low chroma: close enough to read as the same
   // family, far enough that its container does not collide with
   // primary-container after gamut clamping (both were resolving to the same
   // #d4e3ff at tone 90 when the hue was shared).
-  secondary: 300,
-  tertiary: 196, // teal - status, countdown, affirmative accents
-  neutral: 262, // surfaces
-  neutralVariant: 262, // outlines, dividers
-  error: 25, // red-orange
-  success: 148, // extended role (codes still valid)
-  warning: 75, // extended role (code about to expire)
+  secondary: 298.6,
+  tertiary: 320.6, // primary + 60° - accent (aligned with the M3 tonal-spot rule)
+  neutral: 260.6, // surfaces
+  neutralVariant: 260.6, // outlines, dividers
+  error: 28.7, // #B3261E - unified semantic seed
+  success: 148.2, // #146C2E - unified semantic seed (codes still valid)
+  warning: 63.7, // #8B5000 - unified semantic seed (code about to expire)
 };
 
 const CHROMA = {
-  primary: 0.155,
+  primary: 0.199,
   secondary: 0.045,
   tertiary: 0.105,
   neutral: 0.007,
   neutralVariant: 0.022,
-  error: 0.19,
-  success: 0.13,
-  warning: 0.13,
+  error: 0.178,
+  success: 0.125,
+  warning: 0.111,
 };
 
 const TONES = [0, 4, 6, 10, 12, 17, 20, 22, 24, 30, 40, 50, 60, 70, 80, 87, 90, 92, 94, 95, 96, 98, 99, 100];
