@@ -1,0 +1,1421 @@
+/* ==========================================================================
+   ZY2fa · components
+   Material 3 component layer. Every value comes from a token in tokens.css —
+   no raw hex, no magic numbers, so a palette change never needs a CSS edit.
+   Depends on: tokens.css, base.css
+   ========================================================================== */
+
+/* ======================================================================== */
+/*  Buttons                                                                 */
+/* ======================================================================== */
+.btn {
+  --btn-height: 40px;
+  --btn-bg: transparent;
+  --btn-fg: var(--md-sys-color-primary);
+  --btn-border: transparent;
+  --btn-state: currentColor;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-sys-spacing-2);
+  height: var(--btn-height);
+  padding-inline: var(--md-sys-spacing-6);
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 1px solid var(--btn-border);
+  background-color: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  line-height: 1;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+/* M3 state layer: 8% hover / 10% focus / 10% pressed over the container. */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--btn-state);
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.btn:hover::after {
+  opacity: 0.08;
+}
+
+.btn:focus-visible::after {
+  opacity: 0.1;
+}
+
+.btn:active::after {
+  opacity: 0.1;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn[disabled],
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.38;
+  transform: none;
+}
+
+.btn[disabled]::after {
+  opacity: 0 !important;
+}
+
+.btn--filled {
+  --btn-bg: var(--md-sys-color-primary);
+  --btn-fg: var(--md-sys-color-on-primary);
+  --btn-state: var(--md-sys-color-on-primary);
+}
+
+.btn--filled:hover {
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.btn--tonal {
+  --btn-bg: var(--md-sys-color-secondary-container);
+  --btn-fg: var(--md-sys-color-on-secondary-container);
+  --btn-state: var(--md-sys-color-on-secondary-container);
+}
+
+.btn--outlined {
+  --btn-fg: var(--md-sys-color-on-surface);
+  --btn-border: var(--md-sys-color-outline-variant);
+  --btn-state: var(--md-sys-color-on-surface);
+}
+
+.btn--text {
+  --btn-fg: var(--md-sys-color-primary);
+  padding-inline: var(--md-sys-spacing-3);
+}
+
+.btn--danger {
+  --btn-bg: var(--md-sys-color-error-container);
+  --btn-fg: var(--md-sys-color-on-error-container);
+  --btn-state: var(--md-sys-color-on-error-container);
+}
+
+.btn__icon {
+  margin-inline-start: calc(var(--md-sys-spacing-2) * -1);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* ------------------------------------------------------------ icon button */
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface-variant);
+  position: relative;
+  isolation: isolate;
+  flex: 0 0 auto;
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.icon-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  z-index: -1;
+}
+
+.icon-btn:hover::after {
+  opacity: 0.08;
+}
+
+.icon-btn:active::after {
+  opacity: 0.12;
+}
+
+.icon-btn:hover {
+  color: var(--md-sys-color-on-surface);
+}
+
+.icon-btn[aria-pressed='true'] {
+  color: var(--md-sys-color-primary);
+}
+
+.icon-btn--filled {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* --------------------------------------------------------------------- FAB */
+.fab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  height: 56px;
+  padding-inline: var(--md-sys-spacing-5);
+  border-radius: var(--md-sys-shape-corner-large);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: 600;
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  box-shadow: var(--md-sys-elevation-level3);
+  position: relative;
+  isolation: isolate;
+  transition:
+    box-shadow var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized),
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.fab::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.fab:hover {
+  box-shadow: var(--md-sys-elevation-level4);
+}
+
+.fab:hover::after {
+  opacity: 0.08;
+}
+
+.fab:active {
+  transform: scale(0.97);
+  box-shadow: var(--md-sys-elevation-level2);
+}
+
+/* ======================================================================== */
+/*  Text field (M3 outlined, floating label)                                */
+/* ======================================================================== */
+
+/* Colour behind the floating label's notch. Declared on :root (not on .field)
+   so containers can override it and the value is inherited, not shadowed. */
+:root {
+  --field-surface: var(--md-sys-color-surface);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-1);
+  min-width: 0;
+}
+
+.field__box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background-color: transparent;
+  transition:
+    border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.field__box:hover {
+  border-color: var(--md-sys-color-on-surface);
+}
+
+.field__box:focus-within {
+  border-color: var(--md-sys-color-primary);
+  /* Inset shadow emulates the 2dp focus outline without changing border width,
+     so focusing never nudges the text or the textarea's padding. */
+  box-shadow: inset 0 0 0 1px var(--md-sys-color-primary);
+}
+
+.field__input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0 var(--md-sys-spacing-4);
+  height: 54px;
+  font-size: var(--md-sys-typescale-body-large-size);
+  letter-spacing: var(--md-sys-typescale-body-large-tracking);
+  color: var(--md-sys-color-on-surface);
+  border-radius: inherit;
+  outline: none;
+}
+
+.field__input::placeholder {
+  color: transparent;
+}
+
+/* Floating label: sits as the placeholder until focus or content, then
+   shrinks into the notch on the outline. */
+.field__label {
+  position: absolute;
+  inset-inline-start: var(--md-sys-spacing-4);
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-large-size);
+  pointer-events: none;
+  transition:
+    top var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    font-size var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    translate var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+  max-width: calc(100% - var(--md-sys-spacing-8));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field__box:focus-within .field__label,
+.field__input:not(:placeholder-shown) + .field__label,
+.field__box.has-value .field__label {
+  top: 0;
+  translate: 0 -50%;
+  font-size: var(--md-sys-typescale-body-small-size);
+  padding-inline: var(--md-sys-spacing-1);
+  /* Notch colour follows the container the field lives in. */
+  background-color: var(--field-surface, var(--md-sys-color-surface));
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.field__box:focus-within .field__label {
+  color: var(--md-sys-color-primary);
+}
+
+.field__box--textarea {
+  min-height: 112px;
+  align-items: stretch;
+  padding-block: var(--md-sys-spacing-3);
+}
+
+.field__box--textarea .field__input {
+  height: auto;
+  min-height: 96px;
+  resize: vertical;
+  font-family: var(--md-sys-font-mono);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: 1.6;
+}
+
+.field__box--textarea .field__label {
+  top: 18px;
+  translate: none;
+}
+
+.field__box--textarea .field__input:not(:placeholder-shown) + .field__label {
+  top: 0;
+  translate: 0 -50%;
+}
+
+.field__trailing {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-1);
+  padding-inline-end: var(--md-sys-spacing-1);
+}
+
+.field__support {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-1);
+  padding-inline: var(--md-sys-spacing-4);
+  min-height: 20px;
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line-height);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.field__counter {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.field--error .field__box {
+  border-color: var(--md-sys-color-error);
+}
+
+.field--error .field__label,
+.field--error .field__support {
+  color: var(--md-sys-color-error);
+}
+
+.field--error .field__box:focus-within .field__label {
+  color: var(--md-sys-color-error);
+}
+
+.field__input:disabled {
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  cursor: not-allowed;
+}
+
+/* Two related short fields share a row, halving the form's height. */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--md-sys-spacing-3);
+}
+
+@media (max-width: 520px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------- search bar */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  height: 48px;
+  padding-inline: var(--md-sys-spacing-4);
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.search:focus-within {
+  background-color: var(--md-sys-color-surface-container-highest);
+  box-shadow: inset 0 0 0 2px var(--md-sys-color-primary);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-medium-size);
+}
+
+.search input::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.search__clear {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.search__clear:hover {
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* ======================================================================== */
+/*  Segmented button (M3)                                                   */
+/* ======================================================================== */
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.segmented__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-sys-spacing-2);
+  height: 40px;
+  padding-inline: var(--md-sys-spacing-4);
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  position: relative;
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.segmented__item + .segmented__item {
+  border-inline-start: 1px solid var(--md-sys-color-outline);
+}
+
+.segmented__item:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.segmented__item[aria-checked='true'] {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+/* Selected segment shows a checkmark, per the M3 spec. */
+.segmented__check {
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  width: 0;
+  transition:
+    opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    width var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.segmented__item[aria-checked='true'] .segmented__check {
+  opacity: 1;
+  width: 18px;
+}
+
+/* ======================================================================== */
+/*  Switch (M3)                                                             */
+/* ======================================================================== */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  cursor: pointer;
+  padding: var(--md-sys-spacing-1) 0;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.switch__track {
+  width: 52px;
+  height: 32px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 2px solid var(--md-sys-color-outline);
+  background-color: var(--md-sys-color-surface-container-highest);
+  position: relative;
+  flex: 0 0 auto;
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.switch__thumb {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-outline);
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  transition:
+    left var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+    width var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+    height var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized),
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.switch input:checked + .switch__track {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.switch input:checked + .switch__track .switch__thumb {
+  left: 26px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--md-sys-color-on-primary);
+}
+
+.switch input:focus-visible + .switch__track {
+  outline: 3px solid var(--md-sys-color-primary);
+  outline-offset: 3px;
+}
+
+.switch input:disabled + .switch__track {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* ======================================================================== */
+/*  Cards & surfaces                                                        */
+/* ======================================================================== */
+.card {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.card--outlined {
+  background-color: var(--md-sys-color-surface);
+}
+
+.panel {
+  --field-surface: var(--md-sys-color-surface-container-low);
+
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  padding: var(--md-sys-spacing-6);
+  border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
+}
+
+.panel__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-3);
+  margin-bottom: var(--md-sys-spacing-2);
+}
+
+.panel__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.panel__title {
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+  line-height: var(--md-sys-typescale-title-medium-line-height);
+}
+
+.panel__desc {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line-height);
+  color: var(--md-sys-color-on-surface-variant);
+  max-width: 62ch;
+}
+
+/* ======================================================================== */
+/*  Account card                                                            */
+/* ======================================================================== */
+.account-card {
+  --ring-color: var(--md-sys-color-primary);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-4);
+  padding: var(--md-sys-spacing-4) var(--md-sys-spacing-4) var(--md-sys-spacing-3);
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-large);
+  position: relative;
+  isolation: isolate;
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized);
+}
+
+.account-card:hover {
+  background-color: var(--md-sys-color-surface-container);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.account-card.is-copied {
+  border-color: var(--md-sys-color-success);
+}
+
+.account-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  min-width: 0;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-size: var(--md-sys-typescale-title-small-size);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.account-card__meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-card__issuer {
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-card__label {
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-card__code-row {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+}
+
+/* The code itself is the primary action on the card: a full-width tap target
+   so copying never requires precision, styled as a quiet tonal surface. */
+.code-btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-2);
+  padding: var(--md-sys-spacing-3) var(--md-sys-spacing-4);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--md-sys-font-mono);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  text-align: start;
+  transition:
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.code-btn:hover {
+  background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.code-btn:active {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.code-btn__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-btn__icon {
+  color: var(--md-sys-color-on-surface-variant);
+  transition: color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.account-card.is-copied .code-btn__icon {
+  color: var(--md-sys-color-success);
+}
+
+/* Expiring state: the code loses emphasis and takes the warning role so the
+   warning reads before the numbers do. */
+.account-card.is-expiring .code-btn__value {
+  color: var(--md-sys-color-on-warning-container);
+}
+
+.account-card.is-expiring .code-btn {
+  background-color: color-mix(
+    in srgb,
+    var(--md-sys-color-warning-container) 55%,
+    var(--md-sys-color-surface-container-high)
+  );
+}
+
+.account-card.is-critical .code-btn {
+  background-color: color-mix(
+    in srgb,
+    var(--md-sys-color-error-container) 60%,
+    var(--md-sys-color-surface-container-high)
+  );
+}
+
+.account-card.is-critical .code-btn__value {
+  color: var(--md-sys-color-on-error-container);
+}
+
+/* ------------------------------------------------------------- countdown */
+.totp-ring {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.totp-ring__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  rotate: -90deg;
+}
+
+.totp-ring__track {
+  fill: none;
+  stroke: var(--md-sys-color-surface-container-highest);
+  stroke-width: 3.5;
+}
+
+.totp-ring__value {
+  fill: none;
+  stroke: var(--ring-color);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: var(--ring-circumference, 94.25);
+  stroke-dashoffset: 0;
+  animation: totp-countdown var(--period, 30s) linear forwards;
+}
+
+@keyframes totp-countdown {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: var(--ring-circumference, 94.25);
+  }
+}
+
+.totp-ring__seconds {
+  font-size: var(--md-sys-typescale-label-small-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1;
+}
+
+.account-card.is-expiring .totp-ring__seconds {
+  color: var(--md-sys-color-warning);
+}
+
+.account-card.is-critical .totp-ring__seconds {
+  color: var(--md-sys-color-error);
+}
+
+.account-card.is-expiring {
+  --ring-color: var(--md-sys-color-warning);
+}
+
+.account-card.is-critical {
+  --ring-color: var(--md-sys-color-error);
+}
+
+/* ======================================================================== */
+/*  Menu (dropdown)                                                         */
+/* ======================================================================== */
+.menu {
+  position: fixed;
+  z-index: 1200;
+  min-width: 180px;
+  max-width: 280px;
+  padding-block: var(--md-sys-spacing-2);
+  border-radius: var(--md-sys-shape-corner-small);
+  background-color: var(--md-sys-color-surface-container);
+  box-shadow: var(--md-sys-elevation-level2);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  opacity: 0;
+  scale: 0.96;
+  transform-origin: top right;
+  transition:
+    opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    scale var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized);
+}
+
+.menu.is-open {
+  opacity: 1;
+  scale: 1;
+}
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  width: 100%;
+  height: 48px;
+  padding-inline: var(--md-sys-spacing-3);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  color: var(--md-sys-color-on-surface);
+  text-align: start;
+  transition: background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.menu__item:hover,
+.menu__item:focus-visible {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.menu__item .icon {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.menu__item--danger {
+  color: var(--md-sys-color-error);
+}
+
+.menu__item--danger .icon {
+  color: var(--md-sys-color-error);
+}
+
+.menu__divider {
+  height: 1px;
+  margin-block: var(--md-sys-spacing-2);
+  background-color: var(--md-sys-color-outline-variant);
+}
+
+/* ======================================================================== */
+/*  Dialog (native <dialog>, M3 styled)                                     */
+/* ======================================================================== */
+.dialog {
+  --field-surface: var(--md-sys-color-surface-container-high);
+
+  /* The global reset (`* { margin: 0 }`) also zeroes the <dialog> element and
+     thereby defeats the UA's `dialog { margin: auto }` centring, pinning the
+     box to the top-left corner. Restore it here. */
+  margin: auto;
+  border: 0;
+  padding: 0;
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  box-shadow: var(--md-sys-elevation-level3);
+  width: min(560px, calc(100vw - var(--md-sys-spacing-8)));
+  max-height: 86vh; /* fallback for engines without dvh */
+  max-height: min(88dvh, 860px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  scale: 0.94;
+  transition:
+    opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate),
+    scale var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate),
+    overlay var(--md-sys-motion-duration-medium1) allow-discrete,
+    display var(--md-sys-motion-duration-medium1) allow-discrete;
+}
+
+.dialog[open] {
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+    scale: 0.94;
+  }
+}
+
+.dialog::backdrop {
+  background-color: color-mix(in srgb, var(--md-sys-color-scrim) 40%, transparent);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition:
+    opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    overlay var(--md-sys-motion-duration-medium1) allow-discrete,
+    display var(--md-sys-motion-duration-medium1) allow-discrete;
+}
+
+.dialog[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.dialog--narrow {
+  width: min(420px, calc(100vw - var(--md-sys-spacing-8)));
+}
+
+/* The form is the dialog's single flex child. Without making *it* the column
+   container, the header/body/footer are laid out inside an auto-height form
+   that simply overflows the dialog and gets clipped — which is exactly how the
+   footer became unreachable. */
+.dialog__form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dialog__header {
+  flex: 0 0 auto;
+  padding: var(--md-sys-spacing-6) var(--md-sys-spacing-6) var(--md-sys-spacing-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-2);
+}
+
+.dialog__title {
+  font-size: var(--md-sys-typescale-headline-small-size);
+  line-height: var(--md-sys-typescale-headline-small-line-height);
+  font-weight: 400;
+}
+
+.dialog__subtitle {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line-height);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dialog__body {
+  /* Top padding leaves room for the first field's floating label, which sits
+     ~12px above the outline and would otherwise be clipped by the scroll box. */
+  padding: var(--md-sys-spacing-4) var(--md-sys-spacing-6) var(--md-sys-spacing-3);
+  overflow-y: auto;
+  /* `flex: 1` alone lets the body grow past the dialog's max-height, which then
+     clips it via `overflow: hidden` and hides the footer. `min-height: 0` is
+     what actually enables the internal scroll. */
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-4);
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+/* Flex children default to `flex-shrink: 1`: inside a height-limited scroll
+   container they get squashed (the textarea collapsed to a 1px strip) instead
+   of overflowing and scrolling. Fields must keep their intrinsic height. */
+.dialog__body > * {
+  flex: 0 0 auto;
+}
+
+/* The body scrolls on short windows; without a divider the content appears to
+   be chopped mid-element. A hairline makes the boundary read as intentional. */
+.dialog__footer {
+  flex: 0 0 auto;
+  margin-top: var(--md-sys-spacing-2);
+  border-top: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 70%, transparent);
+  padding: var(--md-sys-spacing-6);
+  /* Clear the iOS home indicator without losing the base padding elsewhere. */
+  padding-bottom: max(var(--md-sys-spacing-6), env(safe-area-inset-bottom, 0px));
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  flex-wrap: wrap;
+}
+
+/* ======================================================================== */
+/*  Snackbar                                                                */
+/* ======================================================================== */
+.snackbar-host {
+  position: fixed;
+  z-index: 1400;
+  inset-inline-start: 50%;
+  bottom: calc(var(--md-sys-spacing-6) + env(safe-area-inset-bottom, 0px));
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  pointer-events: none;
+  width: min(560px, calc(100vw - var(--md-sys-spacing-6)));
+}
+
+.snackbar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--md-sys-spacing-2) var(--md-sys-spacing-2) var(--md-sys-spacing-2) var(--md-sys-spacing-4);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background-color: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  box-shadow: var(--md-sys-elevation-level3);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  opacity: 0;
+  translate: 0 12px;
+  transition:
+    opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    translate var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.snackbar.is-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.snackbar__icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.snackbar--error .snackbar__icon {
+  color: var(--md-sys-color-inverse-primary);
+}
+
+.snackbar__text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.snackbar__action {
+  flex: 0 0 auto;
+  padding: 0 var(--md-sys-spacing-3);
+  height: 36px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-inverse-primary);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: 600;
+}
+
+.snackbar__action:hover {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* ======================================================================== */
+/*  Misc: badge, banner, chips, kbd, divider                                */
+/* ======================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-1);
+  height: 24px;
+  padding-inline: var(--md-sys-spacing-2);
+  border-radius: var(--md-sys-shape-corner-small);
+  font-size: var(--md-sys-typescale-label-small-size);
+  font-weight: 600;
+  letter-spacing: var(--md-sys-typescale-label-small-tracking);
+  background-color: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+  white-space: nowrap;
+}
+
+.badge--neutral {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.badge--error {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.banner {
+  display: flex;
+  gap: var(--md-sys-spacing-3);
+  padding: var(--md-sys-spacing-3) var(--md-sys-spacing-4);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: 1.5;
+  color: var(--md-sys-color-on-surface);
+}
+
+.banner--warning {
+  background-color: var(--md-sys-color-warning-container);
+  border-color: transparent;
+  color: var(--md-sys-color-on-warning-container);
+}
+
+.banner--error {
+  background-color: var(--md-sys-color-error-container);
+  border-color: transparent;
+  color: var(--md-sys-color-on-error-container);
+}
+
+.banner--info {
+  background-color: var(--md-sys-color-secondary-container);
+  border-color: transparent;
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.banner .icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-1);
+  height: 28px;
+  padding-inline: var(--md-sys-spacing-2);
+  border-radius: var(--md-sys-shape-corner-small);
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: var(--md-sys-font-mono);
+  font-size: var(--md-sys-typescale-label-small-size);
+  white-space: nowrap;
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-bottom-width: 2px;
+  background-color: var(--md-sys-color-surface-container-high);
+  font-family: var(--md-sys-font-mono);
+  font-size: 0.85em;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--md-sys-color-outline-variant);
+  border: 0;
+  margin: 0;
+}
+
+.alert-text {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-2);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: 1.5;
+  color: var(--md-sys-color-error);
+}
+
+/* ======================================================================== */
+/*  Empty state                                                             */
+/* ======================================================================== */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--md-sys-spacing-3);
+  padding: var(--md-sys-spacing-12) var(--md-sys-spacing-6);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  border: 1px dashed var(--md-sys-color-outline-variant);
+  background-color: color-mix(in srgb, var(--md-sys-color-surface-container-low) 60%, transparent);
+}
+
+.empty__art {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  margin-bottom: var(--md-sys-spacing-1);
+}
+
+.empty__art .icon {
+  width: 34px;
+  height: 34px;
+  stroke-width: 1.5;
+}
+
+.empty__title {
+  font-size: var(--md-sys-typescale-title-large-size);
+  line-height: var(--md-sys-typescale-title-large-line-height);
+  font-weight: 500;
+}
+
+.empty__desc {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: 1.6;
+  color: var(--md-sys-color-on-surface-variant);
+  max-width: 42ch;
+}
+
+.empty__actions {
+  display: flex;
+  gap: var(--md-sys-spacing-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--md-sys-spacing-1);
+}
+
+/* ======================================================================== */
+/*  Skeleton-ish placeholder for the unlock gate                            */
+/* ======================================================================== */
+.gate {
+  display: grid;
+  place-items: center;
+  min-height: 60dvh;
+  padding: var(--md-sys-spacing-6);
+}
+
+.gate__card {
+  --field-surface: var(--md-sys-color-surface-container-low);
+
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-5);
+  padding: var(--md-sys-spacing-8) var(--md-sys-spacing-6);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background-color: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  text-align: center;
+}
+
+.gate__icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-inline: auto;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.gate__title {
+  font-size: var(--md-sys-typescale-headline-small-size);
+  font-weight: 500;
+}
+
+.gate__desc {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.6;
+}
+
+.gate__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-4);
+  text-align: start;
+}
+
+/* PIN entry: centred, wide tracking, monospaced. */
+.pin-input {
+  text-align: center;
+  letter-spacing: 0.6em;
+  font-family: var(--md-sys-font-mono);
+  font-size: 20px;
+  padding-inline-start: 0.6em;
+}
+
+.strength {
+  display: flex;
+  gap: 4px;
+  padding-inline: var(--md-sys-spacing-4);
+}
+
+.strength__bar {
+  height: 4px;
+  flex: 1;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-surface-container-highest);
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.strength[data-level='1'] .strength__bar:nth-child(-n + 1) {
+  background-color: var(--md-sys-color-error);
+}
+
+.strength[data-level='2'] .strength__bar:nth-child(-n + 2) {
+  background-color: var(--md-sys-color-warning);
+}
+
+.strength[data-level='3'] .strength__bar:nth-child(-n + 3) {
+  background-color: var(--md-sys-color-success);
+}
+
+.strength[data-level='4'] .strength__bar {
+  background-color: var(--md-sys-color-success);
+}
+
+/* ======================================================================== */
+/*  Compact-window adaptations                                              */
+/*  A 3-field form plus a link parser is tall. Rather than letting it clip,   */
+/*  tighten the chrome on short screens and switch to a full-screen dialog    */
+/*  on very short ones — which is what M3 prescribes for compact windows.    */
+/* ======================================================================== */
+@media (max-height: 720px) {
+  .dialog__header {
+    padding: var(--md-sys-spacing-5) var(--md-sys-spacing-5) var(--md-sys-spacing-3);
+  }
+
+  .dialog__body {
+    padding-inline: var(--md-sys-spacing-5);
+    gap: var(--md-sys-spacing-3);
+  }
+
+  .dialog__footer {
+    padding: var(--md-sys-spacing-4) var(--md-sys-spacing-5);
+    padding-bottom: max(var(--md-sys-spacing-4), env(safe-area-inset-bottom, 0px));
+  }
+
+  .dialog__title {
+    font-size: var(--md-sys-typescale-title-large-size);
+    line-height: var(--md-sys-typescale-title-large-line-height);
+  }
+
+  .dialog__subtitle {
+    font-size: var(--md-sys-typescale-body-small-size);
+    line-height: 1.5;
+  }
+}
+
+@media (max-height: 520px) {
+  .dialog,
+  .dialog--narrow {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .dialog__header {
+    padding-block: var(--md-sys-spacing-3) var(--md-sys-spacing-2);
+  }
+
+  .dialog__footer {
+    padding-bottom: max(var(--md-sys-spacing-3), env(safe-area-inset-bottom, 0px));
+  }
+}
+

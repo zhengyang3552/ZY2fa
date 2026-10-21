@@ -1,0 +1,4 @@
+# 仓库内统一 LF：CI 的 bash 步骤遇到 CRLF 会报 "command not found"。
+* text=auto eol=lf
+*.png binary
+*.ico binary

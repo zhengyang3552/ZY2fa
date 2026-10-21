@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f7f9fe" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121417" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="ZY2fa — 基于 TOTP 的双重验证码工具，支持本地加密存储与 Material 3 主题。">
+  <title>ZY2fa · 双重验证码</title>
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+
+  <script>
+    /* Resolve the colour scheme before first paint so there is no flash of the
+       wrong theme. Falls back silently when storage is blocked. */
+    (function () {
+      try {
+        var saved = localStorage.getItem('zy2fa.theme');
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.dataset.theme = saved;
+        }
+      } catch (e) { /* private mode */ }
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ==================================================================== -->
+<!--  Icon sprite                                                          -->
+<!--  Hand-drawn 24px stroke set: consistent 1.8 stroke, rounded caps.     -->
+<!-- ==================================================================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.4c0 4.6-3.1 8.2-7.5 9.6-4.4-1.4-7.5-5-7.5-9.6V6z"/></symbol>
+    <symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.4c0 4.6-3.1 8.2-7.5 9.6-4.4-1.4-7.5-5-7.5-9.6V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="18.5" r="1.6" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 6.5v-.8A2.2 2.2 0 0012.8 3.5H6.2A2.2 2.2 0 004 5.7v6.6a2.2 2.2 0 002.2 2.2h.8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.8l4.8 4.8L19.5 7"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M8.2 12.4l2.6 2.6 5-5.2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.8h5V7M6.5 7l.9 12.2h9.2L17.5 7M10.2 11v5M13.8 11v5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.5 2.5 0 00-3.5-3.5L4 16.5z"/><path d="M14.5 6.5L18 10"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M8 10V7.5a4 4 0 018 0V10"/></symbol>
+    <symbol id="i-lock-open" viewBox="0 0 24 24"><rect x="4.5" y="10" width="15" height="10.5" rx="2.5"/><path d="M8 10V7.5a4 4 0 016.6-3"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 20V9M7.5 13L12 8.5l4.5 4.5M5 4h14"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 8h9M18 8h2M4 16h3M12 16h8"/><circle cx="15.5" cy="8" r="2.4"/><circle cx="9.5" cy="16" r="2.4"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.4" cy="16.6" r="3.4"/><path d="M9.9 14.1L20 4M15.6 8.4l2.3 2.3M18.2 5.8l2.3 2.3"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10.5 13.5a4 4 0 005.6 0l2.2-2.2a4 4 0 10-5.6-5.6l-1 1"/><path d="M13.5 10.5a4 4 0 00-5.6 0l-2.2 2.2a4 4 0 105.6 5.6l1-1"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 3.8l8.6 15.4H3.4z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M12 11v5.2"/><circle cx="12" cy="7.9" r="0.9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.8v2.2M12 19v2.2M4.5 12H2.3M21.7 12h-2.2M6.3 6.3L4.8 4.8M19.2 19.2l-1.5-1.5M17.7 6.3l1.5-1.5M4.8 19.2l1.5-1.5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.3A8.6 8.6 0 019.7 3.5 8.8 8.8 0 1020.5 14.3z"/></symbol>
+    <symbol id="i-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M12 3.2v17.6A8.8 8.8 0 0012 3.2z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M4.5 11.5a7.5 7.5 0 0112.8-5.3l2.2 2.2M20 4v4.6h-4.6"/><path d="M19.5 12.5a7.5 7.5 0 01-12.8 5.3l-2.2-2.2M4 20v-4.6h4.6"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9.5 5.5l6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.8 12S6.5 5.8 12 5.8 21.2 12 21.2 12 17.5 18.2 12 18.2 2.8 12 2.8 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M4 4l16 16"/><path d="M9.6 6.2A9.8 9.8 0 0112 6c5.5 0 9.2 6 9.2 6a17 17 0 01-2.6 3.3M6.4 8.2A17 17 0 002.8 12S6.5 18 12 18a9.5 9.5 0 003.3-.6"/><path d="M10.1 10.2a2.7 2.7 0 003.7 3.7"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M13.5 3.5H7.5A2 2 0 005.5 5.5v13a2 2 0 002 2h9a2 2 0 002-2V8.5z"/><path d="M13.5 3.5v5h5"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="6" y="4.5" width="12" height="16" rx="2.2"/><path d="M9.5 4.5V3.6A1.6 1.6 0 0111.1 2h1.8a1.6 1.6 0 011.6 1.6v.9z"/><path d="M9 11h6M9 15h4"/></symbol>
+  </defs>
+</svg>
+
+<!-- ==================================================================== -->
+<!--  App shell                                                            -->
+<!-- ==================================================================== -->
+<div class="app">
+
+  <header class="app-bar" id="appBar">
+    <div class="app-bar__brand">
+      <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-shield-check"></use></svg></span>
+      <div class="brand-text">
+        <h1 class="brand-title">ZY<span>2fa</span></h1>
+        <p class="brand-tag">本地双重验证码 · 不上传任何密钥</p>
+      </div>
+      <span class="badge" id="encBadge" hidden>
+        <svg class="icon icon--xs" aria-hidden="true"><use href="#i-lock"></use></svg>已加密
+      </span>
+    </div>
+
+    <div class="app-bar__actions">
+      <button class="icon-btn" id="btnLockTop" type="button" title="立即锁定" aria-label="立即锁定" hidden>
+        <svg class="icon" aria-hidden="true"><use href="#i-lock"></use></svg>
+      </button>
+      <button class="icon-btn" id="btnTheme" type="button" title="切换外观" aria-label="切换外观"
+              aria-haspopup="menu" aria-expanded="false">
+        <svg class="icon" aria-hidden="true"><use href="#i-contrast"></use></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!--  Locked gate                                                     -->
+  <!-- ---------------------------------------------------------------- -->
+  <section class="gate" id="gate" hidden>
+    <form class="gate__card" id="gateForm" novalidate>
+      <div class="gate__icon"><svg class="icon" aria-hidden="true"><use href="#i-lock"></use></svg></div>
+      <div>
+        <h2 class="gate__title">保险库已锁定</h2>
+        <p class="gate__desc">账户密钥已加密保存在本机。输入密码后才会解密并显示验证码。</p>
+      </div>
+
+      <div class="gate__form">
+        <div class="field" data-field="pin">
+          <div class="field__box">
+            <input class="field__input pin-input" id="gatePin" type="password" inputmode="text"
+                   autocomplete="current-password" placeholder="密码" aria-describedby="gateError">
+            <label class="field__label" for="gatePin">保险库密码</label>
+          </div>
+          <div class="field__support" id="gateError"></div>
+        </div>
+        <button class="btn btn--filled btn--block" id="gateSubmit" type="submit">解锁</button>
+      </div>
+
+      <button class="btn btn--text" id="gateReset" type="button" style="color:var(--md-sys-color-error)">
+        忘记密码？清除本地数据
+      </button>
+    </form>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!--  Main body                                                       -->
+  <!-- ---------------------------------------------------------------- -->
+  <div class="app-body" id="appBody" hidden>
+    <nav class="nav" aria-label="主导航">
+      <a class="nav__item" href="#/codes" data-route="codes" aria-current="page">
+        <span class="nav__icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-shield-check"></use></svg></span>
+        <span>验证码</span>
+      </a>
+      <a class="nav__item" href="#/backup" data-route="backup">
+        <span class="nav__icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-database"></use></svg></span>
+        <span>备份</span>
+      </a>
+      <a class="nav__item" href="#/settings" data-route="settings">
+        <span class="nav__icon-wrap"><svg class="icon" aria-hidden="true"><use href="#i-sliders"></use></svg></span>
+        <span>设置</span>
+      </a>
+    </nav>
+
+    <main class="content" id="content">
+
+      <!-- ============================= 验证码 ========================= -->
+      <section class="view is-active" id="view-codes" aria-labelledby="codesTitle">
+        <div class="view-head">
+          <div>
+            <p class="eyebrow">身份验证器</p>
+            <h2 class="view-title" id="codesTitle">我的验证码</h2>
+            <p class="view-sub" id="codesSummary">共 0 个账户</p>
+          </div>
+          <div class="view-head__side">
+            <button class="btn btn--outlined" id="btnSort" type="button" aria-haspopup="menu" aria-expanded="false">
+              <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-sliders"></use></svg>
+              <span id="sortLabel">添加时间</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-search"></use></svg>
+            <input type="search" id="searchInput" placeholder="搜索服务或账户" aria-label="搜索账户"
+                   autocomplete="off" spellcheck="false">
+            <button class="search__clear" id="searchClear" type="button" aria-label="清除搜索" hidden>
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-close"></use></svg>
+            </button>
+          </div>
+          <span class="toolbar__count" id="countLabel"></span>
+        </div>
+
+        <div id="noticeSlot"></div>
+
+        <ul class="account-grid" id="accountList" style="margin-top:var(--md-sys-spacing-4)"></ul>
+
+        <div class="empty" id="emptyState" hidden>
+          <div class="empty__art"><svg class="icon" aria-hidden="true"><use href="#i-key"></use></svg></div>
+          <h3 class="empty__title" id="emptyTitle">还没有添加任何账户</h3>
+          <p class="empty__desc" id="emptyDesc">
+            添加账户后，这里会显示每 30 秒刷新的动态验证码。所有密钥只保存在这台设备的浏览器里。
+          </p>
+          <div class="empty__actions">
+            <button class="btn btn--filled" id="emptyAdd" type="button">
+              <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+              添加账户
+            </button>
+            <button class="btn btn--outlined" id="emptyImport" type="button">
+              <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-upload"></use></svg>
+              从备份导入
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 备份 ========================== -->
+      <section class="view" id="view-backup" aria-labelledby="backupTitle">
+        <div class="view-head">
+          <div>
+            <p class="eyebrow">数据迁移</p>
+            <h2 class="view-title" id="backupTitle">备份与恢复</h2>
+            <p class="view-sub">
+              备份文件包含全部密钥明文，请像保管密码一样保管它。建议导出后存进加密磁盘或密码管理器。
+            </p>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="stats" id="backupStats">
+            <div class="stat">
+              <p class="stat__value" id="statAccounts">0</p>
+              <p class="stat__label">账户总数</p>
+            </div>
+            <div class="stat">
+              <p class="stat__value" id="statEncrypted">否</p>
+              <p class="stat__label">本地加密</p>
+            </div>
+            <div class="stat">
+              <p class="stat__value" id="statUsage">0 B</p>
+              <p class="stat__label">存储占用</p>
+            </div>
+            <div class="stat">
+              <p class="stat__value" id="statUpdated">—</p>
+              <p class="stat__label">最近保存</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <span class="panel__icon"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-download"></use></svg></span>
+              <div>
+                <h3 class="panel__title">导出</h3>
+                <p class="panel__desc">JSON 适合长期归档与跨设备迁移；otpauth 列表可直接粘贴到其他验证器。</p>
+              </div>
+            </div>
+            <div class="row" style="margin-top:var(--md-sys-spacing-4)">
+              <div style="display:flex;gap:var(--md-sys-spacing-2);flex-wrap:wrap">
+                <button class="btn btn--tonal" id="btnExportFile" type="button">
+                  <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-download"></use></svg>
+                  下载 JSON
+                </button>
+                <button class="btn btn--outlined" id="btnExportClipboard" type="button">
+                  <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-copy"></use></svg>
+                  复制 JSON
+                </button>
+                <button class="btn btn--outlined" id="btnExportUris" type="button">
+                  <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-link"></use></svg>
+                  复制 otpauth 列表
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <span class="panel__icon"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-upload"></use></svg></span>
+              <div>
+                <h3 class="panel__title">导入</h3>
+                <p class="panel__desc">支持 ZY2fa 备份 JSON、通用的 accounts 数组、otpauth:// 链接或纯密钥文本。</p>
+              </div>
+            </div>
+
+            <div class="stack" style="margin-top:var(--md-sys-spacing-4);gap:var(--md-sys-spacing-3)">
+              <div class="field" data-field="payload">
+                <div class="field__box field__box--textarea">
+                  <textarea class="field__input" id="importText" placeholder=" "
+                            aria-label="导入内容" spellcheck="false"></textarea>
+                  <label class="field__label" for="importText">粘贴备份内容</label>
+                </div>
+                <div class="field__support"><span>粘贴 JSON 或每行一条 otpauth:// 链接</span></div>
+              </div>
+
+              <div class="row">
+                <div style="display:flex;gap:var(--md-sys-spacing-2);flex-wrap:wrap;align-items:center">
+                  <button class="btn btn--filled" id="btnImport" type="button">
+                    <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-upload"></use></svg>
+                    开始导入
+                  </button>
+                  <label class="btn btn--text" for="importFile" style="cursor:pointer">
+                    <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-file"></use></svg>
+                    选择文件
+                    <input type="file" id="importFile" accept=".json,.txt,application/json,text/plain" hidden>
+                  </label>
+                  <button class="btn btn--text" id="btnImportClear" type="button">清空</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="banner banner--info">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-info"></use></svg>
+            <span>导入不会覆盖现有账户，重复的条目（同名同密钥）会被自动跳过，并给出导入结果摘要。</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== 设置 ========================== -->
+      <section class="view" id="view-settings" aria-labelledby="settingsTitle">
+        <div class="view-head">
+          <div>
+            <p class="eyebrow">偏好设置</p>
+            <h2 class="view-title" id="settingsTitle">设置</h2>
+            <p class="view-sub">外观、安全与本地数据管理。所有设置仅作用于这台设备。</p>
+          </div>
+        </div>
+
+        <div class="stack">
+          <!-- 外观 -->
+          <div class="panel">
+            <div class="panel__head">
+              <span class="panel__icon"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-contrast"></use></svg></span>
+              <div>
+                <h3 class="panel__title">外观</h3>
+                <p class="panel__desc">配色基于 Material 3 语义化颜色角色，跟随系统时会实时响应系统明暗切换。</p>
+              </div>
+            </div>
+            <div class="row" style="margin-top:var(--md-sys-spacing-4)">
+              <div>
+                <p class="row__label">主题模式</p>
+                <p class="row__hint" id="themeHint">跟随系统</p>
+              </div>
+              <div class="segmented" role="radiogroup" aria-label="主题模式" id="themeSegmented">
+                <button class="segmented__item" type="button" role="radio" aria-checked="false" data-theme-value="light">
+                  <svg class="segmented__check icon icon--xs" aria-hidden="true"><use href="#i-check"></use></svg>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-sun"></use></svg>浅色
+                </button>
+                <button class="segmented__item" type="button" role="radio" aria-checked="false" data-theme-value="dark">
+                  <svg class="segmented__check icon icon--xs" aria-hidden="true"><use href="#i-check"></use></svg>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-moon"></use></svg>深色
+                </button>
+                <button class="segmented__item" type="button" role="radio" aria-checked="true" data-theme-value="system">
+                  <svg class="segmented__check icon icon--xs" aria-hidden="true"><use href="#i-check"></use></svg>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-contrast"></use></svg>系统
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 安全 -->
+          <div class="panel">
+            <div class="panel__head">
+              <span class="panel__icon"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-lock"></use></svg></span>
+              <div>
+                <h3 class="panel__title">安全</h3>
+                <p class="panel__desc">开启后，账户密钥以 AES-256-GCM 加密保存，打开页面需要先输入密码。</p>
+              </div>
+            </div>
+
+            <div class="stack-list" style="margin-top:var(--md-sys-spacing-4)">
+              <div class="row row--top">
+                <div>
+                  <p class="row__label">本地加密</p>
+                  <p class="row__hint" id="pinHint">未开启。密钥以明文保存在浏览器 localStorage 中，同一台电脑的其他使用者可能读取。</p>
+                </div>
+                <div style="display:flex;gap:var(--md-sys-spacing-2);flex-wrap:wrap">
+                  <button class="btn btn--tonal" id="btnPinPrimary" type="button">开启加密</button>
+                  <button class="btn btn--text" id="btnLockNow" type="button" hidden>立即锁定</button>
+                </div>
+              </div>
+
+              <hr class="divider">
+
+              <div class="row row--top">
+                <div>
+                  <p class="row__label">自动锁定</p>
+                  <p class="row__hint">页面在后台超过设定时间后自动锁定，避免离开座位时被人看到验证码。仅在已开启加密时生效。</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="autoLockToggle" aria-label="启用自动锁定">
+                  <span class="switch__track"><span class="switch__thumb"></span></span>
+                  <span class="row__label" style="font-size:var(--md-sys-typescale-body-medium-size)">5 分钟</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 数据 -->
+          <div class="panel">
+            <div class="panel__head">
+              <span class="panel__icon"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-database"></use></svg></span>
+              <div>
+                <h3 class="panel__title">本地数据</h3>
+                <p class="panel__desc">数据保存在当前浏览器的 localStorage 中。清理浏览器数据会一并删除，请定期备份。</p>
+              </div>
+            </div>
+            <div class="stack-list" style="margin-top:var(--md-sys-spacing-4)">
+              <div class="row">
+                <div>
+                  <p class="row__label">账户数量</p>
+                  <p class="row__hint" id="dataCountHint">0 个账户</p>
+                </div>
+                <span class="badge badge--neutral" id="dataCountBadge">0</span>
+              </div>
+              <hr class="divider">
+              <div class="row">
+                <div>
+                  <p class="row__label">清除全部数据</p>
+                  <p class="row__hint">删除所有账户与本地设置，不可撤销。此操作前请先导出备份。</p>
+                </div>
+                <button class="btn btn--danger" id="btnWipe" type="button">
+                  <svg class="icon icon--sm btn__icon" aria-hidden="true"><use href="#i-trash"></use></svg>
+                  清除数据
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 关于 -->
+          <div class="panel">
+            <div class="panel__head">
+              <span class="panel__icon"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-info"></use></svg></span>
+              <div>
+                <h3 class="panel__title">关于 ZY2fa</h3>
+                <p class="panel__desc">
+                  基于 RFC 6238（TOTP）与 RFC 4226（HOTP）实现的纯前端验证器，支持 SHA-1/256/512、
+                  6/8 位验证码与自定义周期。无网络请求，无第三方依赖。
+                </p>
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--md-sys-spacing-2);flex-wrap:wrap;margin-top:var(--md-sys-spacing-4)">
+              <span class="chip">RFC 6238</span>
+              <span class="chip">RFC 4226</span>
+              <span class="chip">AES-256-GCM</span>
+              <span class="chip">PBKDF2-SHA256</span>
+              <span class="chip">Material 3</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <button class="fab" id="btnAdd" type="button" aria-label="添加账户">
+    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+    <span>添加账户</span>
+  </button>
+</div>
+
+<!-- ==================================================================== -->
+<!--  Add / edit account dialog                                            -->
+<!-- ==================================================================== -->
+<dialog class="dialog" id="dlgAccount" aria-labelledby="dlgAccountTitle">
+  <form class="dialog__form" id="accountForm" novalidate method="dialog">
+    <div class="dialog__header">
+      <h2 class="dialog__title" id="dlgAccountTitle">添加账户</h2>
+      <p class="dialog__subtitle">粘贴 otpauth 链接可自动填充全部字段，也可以手动输入服务提供的密钥。</p>
+    </div>
+
+    <div class="dialog__body">
+      <div class="field" data-field="uri">
+        <div class="field__box field__box--textarea" style="min-height:76px">
+          <textarea class="field__input" id="uriInput" placeholder=" " style="min-height:60px"
+                    spellcheck="false" aria-label="otpauth 链接"></textarea>
+          <label class="field__label" for="uriInput">方式一：粘贴 otpauth:// 链接</label>
+        </div>
+        <div class="field__support">
+          <span style="min-width:0">例如 otpauth://totp/…</span>
+          <button class="btn btn--text" id="btnParseUri" type="button"
+                  style="height:auto;padding:0 4px;font-size:11px;flex:0 0 auto;margin-inline-start:auto">解析</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" data-field="issuer">
+          <div class="field__box">
+            <input class="field__input" id="issuerInput" type="text" placeholder=" " maxlength="64" autocomplete="off">
+            <label class="field__label" for="issuerInput">服务名称（必填）</label>
+          </div>
+          <div class="field__support"><span>如 GitHub、Google</span></div>
+        </div>
+
+        <div class="field" data-field="label">
+          <div class="field__box">
+            <input class="field__input" id="labelInput" type="text" placeholder=" " maxlength="128" autocomplete="off">
+            <label class="field__label" for="labelInput">账户标识</label>
+          </div>
+          <div class="field__support"><span>邮箱或用户名</span></div>
+        </div>
+      </div>
+
+      <div class="field" data-field="secret">
+        <div class="field__box">
+          <input class="field__input" id="secretInput" type="text" placeholder=" " spellcheck="false"
+                 autocomplete="off" style="font-family:var(--md-sys-font-mono);letter-spacing:0.04em">
+          <label class="field__label" for="secretInput">密钥（base32，必填）</label>
+          <div class="field__trailing">
+            <button class="icon-btn" id="btnToggleSecret" type="button" aria-label="显示或隐藏密钥">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-eye"></use></svg>
+            </button>
+          </div>
+        </div>
+        <div class="field__support"><span>仅允许 A–Z 与 2–7，空格与连字符会自动忽略</span></div>
+      </div>
+
+      <details id="advanced" style="margin-top:-4px">
+        <summary style="cursor:pointer;font-size:var(--md-sys-typescale-label-large-size);
+                        color:var(--md-sys-color-primary);padding:var(--md-sys-spacing-1) 0;user-select:none">
+          高级选项
+        </summary>
+        <div class="stack" style="gap:var(--md-sys-spacing-3);padding-top:var(--md-sys-spacing-3)">
+          <div class="row">
+            <div>
+              <p class="row__label" style="font-size:var(--md-sys-typescale-body-medium-size)">哈希算法</p>
+              <p class="row__hint" style="font-size:11px">绝大多数服务使用 SHA-1</p>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="哈希算法" id="algoSegmented">
+              <button class="segmented__item" type="button" role="radio" aria-checked="true" data-algo="SHA1">SHA-1</button>
+              <button class="segmented__item" type="button" role="radio" aria-checked="false" data-algo="SHA256">SHA-256</button>
+              <button class="segmented__item" type="button" role="radio" aria-checked="false" data-algo="SHA512">SHA-512</button>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <p class="row__label" style="font-size:var(--md-sys-typescale-body-medium-size)">验证码位数</p>
+              <p class="row__hint" style="font-size:11px">位数填错会导致验证码无效</p>
+            </div>
+            <div class="segmented" role="radiogroup" aria-label="验证码位数" id="digitsSegmented">
+              <button class="segmented__item" type="button" role="radio" aria-checked="true" data-digits="6">6 位</button>
+              <button class="segmented__item" type="button" role="radio" aria-checked="false" data-digits="8">8 位</button>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <p class="row__label" style="font-size:var(--md-sys-typescale-body-medium-size)">刷新周期</p>
+              <p class="row__hint" style="font-size:11px">单位秒，默认 30</p>
+            </div>
+            <div class="field" style="width:104px">
+              <div class="field__box" style="min-height:44px">
+                <input class="field__input" id="periodInput" type="number" min="5" max="300" step="1" value="30"
+                       style="height:42px" aria-label="刷新周期（秒）">
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Live preview: proves the secret works before it is saved. -->
+      <div class="banner" id="previewBox" aria-live="polite">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-key"></use></svg>
+        <span id="previewText" style="font-family:var(--md-sys-font-mono);letter-spacing:0.12em">
+          填写密钥后可实时预览
+        </span>
+      </div>
+    </div>
+
+    <div class="dialog__footer">
+      <button class="btn btn--text" type="button" data-close>取消</button>
+      <button class="btn btn--filled" type="submit" id="btnSaveAccount">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ==================================================================== -->
+<!--  PIN dialog                                                           -->
+<!-- ==================================================================== -->
+<dialog class="dialog dialog--narrow" id="dlgPin" aria-labelledby="dlgPinTitle">
+  <form class="dialog__form" id="pinForm" novalidate method="dialog">
+    <div class="dialog__header">
+      <h2 class="dialog__title" id="dlgPinTitle">开启本地加密</h2>
+      <p class="dialog__subtitle" id="dlgPinSubtitle">
+        设置一个密码。密钥会用该密码派生的密钥加密后保存，忘记密码将无法恢复。
+      </p>
+    </div>
+
+    <div class="dialog__body">
+      <div class="field" data-field="currentPin" id="currentPinField" hidden>
+        <div class="field__box">
+          <input class="field__input" id="currentPin" type="password" placeholder=" " autocomplete="current-password">
+          <label class="field__label" for="currentPin">当前密码</label>
+        </div>
+        <div class="field__support"></div>
+      </div>
+
+      <div class="field" data-field="newPin" id="newPinField">
+        <div class="field__box">
+          <input class="field__input" id="newPin" type="password" placeholder=" " autocomplete="new-password">
+          <label class="field__label" for="newPin">新密码</label>
+        </div>
+        <div class="strength" id="pinStrength" data-level="0" aria-hidden="true">
+          <span class="strength__bar"></span><span class="strength__bar"></span>
+          <span class="strength__bar"></span><span class="strength__bar"></span>
+        </div>
+        <div class="field__support"><span>至少 6 位，建议使用 8 位以上混合字符</span></div>
+      </div>
+
+      <div class="field" data-field="confirmPin" id="confirmPinField">
+        <div class="field__box">
+          <input class="field__input" id="confirmPin" type="password" placeholder=" " autocomplete="new-password">
+          <label class="field__label" for="confirmPin">确认新密码</label>
+        </div>
+        <div class="field__support"></div>
+      </div>
+
+      <div class="banner banner--warning" id="pinWarning">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-warning"></use></svg>
+        <span>密码无法找回。一旦遗忘，只能清除本地数据并重新导入备份。</span>
+      </div>
+    </div>
+
+    <div class="dialog__footer">
+      <button class="btn btn--text" type="button" data-close>取消</button>
+      <button class="btn btn--filled" type="submit" id="btnConfirmPin">确认</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="snackbar-host" role="status" aria-live="polite"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

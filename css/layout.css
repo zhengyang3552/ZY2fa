@@ -1,0 +1,556 @@
+/* ==========================================================================
+   ZY2fa · layout
+   App shell, navigation (rail → bottom bar), responsive grid, page rhythm.
+   Depends on: tokens.css, base.css, components.css
+   ========================================================================== */
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--md-sys-color-surface);
+}
+
+/* ======================================================================== */
+/*  Top app bar                                                             */
+/* ======================================================================== */
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-4);
+  height: var(--app-bar-height);
+  padding-inline: var(--md-sys-spacing-4);
+  background-color: color-mix(in srgb, var(--md-sys-color-surface) 82%, transparent);
+  backdrop-filter: blur(12px) saturate(1.4);
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Only draw the divider once content scrolls beneath the bar. */
+.app-bar.is-stuck {
+  border-bottom-color: var(--md-sys-color-outline-variant);
+  background-color: color-mix(in srgb, var(--md-sys-color-surface) 94%, transparent);
+}
+
+.app-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  min-width: 0;
+  margin-inline-end: auto;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: linear-gradient(
+    145deg,
+    var(--md-sys-color-primary),
+    color-mix(in srgb, var(--md-sys-color-tertiary) 70%, var(--md-sys-color-primary))
+  );
+  color: var(--md-sys-color-on-primary);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.brand-mark .icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+.brand-text {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.brand-title {
+  font-size: var(--md-sys-typescale-title-large-size);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.brand-title span {
+  color: var(--md-sys-color-primary);
+}
+
+.brand-tag {
+  font-size: var(--md-sys-typescale-label-small-size);
+  color: var(--md-sys-color-on-surface-variant);
+  letter-spacing: var(--md-sys-typescale-label-small-tracking);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.app-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-1);
+}
+
+/* ======================================================================== */
+/*  Body: nav + content                                                     */
+/* ======================================================================== */
+.app-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+/* ------------------------------------------------------------------- nav */
+.nav {
+  position: fixed;
+  z-index: 950;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  gap: var(--md-sys-spacing-1);
+  padding: var(--md-sys-spacing-2) var(--md-sys-spacing-2)
+    calc(var(--md-sys-spacing-2) + env(safe-area-inset-bottom, 0px));
+  background-color: var(--md-sys-color-surface-container);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--md-sys-spacing-2) var(--md-sys-spacing-1);
+  border-radius: var(--md-sys-shape-corner-large);
+  color: var(--md-sys-color-on-surface-variant);
+  text-decoration: none;
+  font-size: var(--md-sys-typescale-label-medium-size);
+  font-weight: var(--md-sys-typescale-label-medium-weight);
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+  position: relative;
+  transition:
+    color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Active destination: pill behind the icon, per M3 navigation bar. */
+.nav__icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 32px;
+  border-radius: var(--md-sys-shape-corner-full);
+  transition: background-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized);
+}
+
+.nav__item[aria-current='page'] {
+  color: var(--md-sys-color-on-surface);
+}
+
+.nav__item[aria-current='page'] .nav__icon-wrap {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.nav__item[aria-current='page'] .icon {
+  stroke-width: 2.2;
+}
+
+.nav__item:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
+}
+
+/* --------------------------------------------------------------- content */
+.content {
+  min-width: 0;
+  padding: var(--md-sys-spacing-6) var(--md-sys-spacing-4)
+    calc(152px + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin-inline: auto;
+}
+
+.view {
+  display: none;
+  animation: view-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.view.is-active {
+  display: block;
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* --------------------------------------------------------------- page head */
+.view-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--md-sys-spacing-5);
+  min-width: 0;
+}
+
+/* Let the text column shrink instead of pushing the action button past the
+   viewport edge; the side cluster keeps its intrinsic width and wraps. */
+.view-head > * {
+  min-width: 0;
+}
+
+.view-head__side {
+  flex: 0 0 auto;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-primary);
+  margin-bottom: var(--md-sys-spacing-2);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background-color: currentColor;
+}
+
+.view-title {
+  font-size: var(--md-sys-typescale-headline-medium-size);
+  line-height: var(--md-sys-typescale-headline-medium-line-height);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 600px) {
+  .view-title {
+    font-size: var(--md-sys-typescale-headline-large-size);
+    line-height: var(--md-sys-typescale-headline-large-line-height);
+  }
+}
+
+.view-sub {
+  margin-top: var(--md-sys-spacing-2);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  color: var(--md-sys-color-on-surface-variant);
+  max-width: 62ch;
+  line-height: 1.6;
+}
+
+.view-head__side {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------- toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-3);
+  margin-bottom: var(--md-sys-spacing-4);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.toolbar .search {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.toolbar__count {
+  font-size: var(--md-sys-typescale-label-medium-size);
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------- grid */
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--md-sys-spacing-3);
+}
+
+@media (min-width: 560px) {
+  .account-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--md-sys-spacing-4);
+  }
+}
+
+@media (min-width: 900px) {
+  .account-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------- settings/stack */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-4);
+  max-width: 720px;
+}
+
+.stack--wide {
+  max-width: none;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-2);
+  font-size: var(--md-sys-typescale-title-small-size);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: var(--md-sys-spacing-3);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-4);
+  flex-wrap: wrap;
+}
+
+.row--top {
+  align-items: flex-start;
+}
+
+.row__label {
+  font-size: var(--md-sys-typescale-body-large-size);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.row__hint {
+  margin-top: 2px;
+  font-size: var(--md-sys-typescale-body-small-size);
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.55;
+  max-width: 46ch;
+}
+
+.stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-4);
+}
+
+/* ------------------------------------------------------------------ FAB */
+.fab {
+  position: fixed;
+  z-index: 940;
+  inset-inline-end: var(--md-sys-spacing-4);
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+/* --------------------------------------------------------- data stat grid */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--md-sys-spacing-3);
+}
+
+.stat {
+  padding: var(--md-sys-spacing-4);
+  border-radius: var(--md-sys-shape-corner-large);
+  background-color: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.stat__value {
+  font-size: var(--md-sys-typescale-headline-small-size);
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.stat__label {
+  margin-top: var(--md-sys-spacing-1);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ======================================================================== */
+/*  Wide layout: navigation rail on the left                                */
+/* ======================================================================== */
+@media (min-width: 900px) {
+  .app-body {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .nav {
+    position: sticky;
+    top: var(--app-bar-height);
+    inset-inline: auto;
+    bottom: auto;
+    height: calc(100dvh - var(--app-bar-height));
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--md-sys-spacing-2);
+    padding: var(--md-sys-spacing-4) var(--md-sys-spacing-2);
+    background-color: transparent;
+    border-top: 0;
+    border-inline-end: 1px solid var(--md-sys-color-outline-variant);
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .nav__item {
+    flex: 0 0 auto;
+    width: 100%;
+    padding: var(--md-sys-spacing-2) 0;
+    border-radius: var(--md-sys-shape-corner-large);
+  }
+
+  .nav__icon-wrap {
+    width: 56px;
+    height: 32px;
+  }
+
+  .content {
+    grid-column: 2;
+    padding: var(--md-sys-spacing-8) var(--md-sys-spacing-8) var(--md-sys-spacing-16);
+  }
+
+  .fab {
+    bottom: calc(var(--md-sys-spacing-8) + env(safe-area-inset-bottom, 0px));
+    inset-inline-end: var(--md-sys-spacing-8);
+  }
+
+  .app-bar {
+    padding-inline: var(--md-sys-spacing-6);
+  }
+}
+
+@media (min-width: 1200px) {
+  .content {
+    padding-inline: var(--md-sys-spacing-12);
+  }
+}
+
+/* ======================================================================== */
+/*  Small screens: tighten the rhythm, keep the code legible                */
+/* ======================================================================== */
+@media (max-width: 420px) {
+  .code-btn {
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    padding-inline: var(--md-sys-spacing-3);
+  }
+
+  .brand-tag {
+    display: none;
+  }
+
+  .fab {
+    inset-inline-end: var(--md-sys-spacing-3);
+  }
+
+  .fab span {
+    display: none;
+  }
+
+  .fab {
+    width: 56px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+/* ======================================================================== */
+/*  Short viewports                                                        */
+/*  Below ~700px tall, the empty state and page rhythm would push the primary
+/*  action below the fold. Tighten the vertical rhythm instead.             */
+/* ======================================================================== */
+@media (max-height: 700px) {
+  .content {
+    padding-top: var(--md-sys-spacing-4);
+  }
+
+  .view-head {
+    margin-bottom: var(--md-sys-spacing-3);
+  }
+
+  .empty {
+    padding: var(--md-sys-spacing-8) var(--md-sys-spacing-4);
+  }
+
+  .empty__art {
+    width: 56px;
+    height: 56px;
+  }
+
+  .empty__art .icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .gate {
+    min-height: 0;
+    padding-block: var(--md-sys-spacing-4);
+  }
+
+  .gate__card {
+    padding: var(--md-sys-spacing-6);
+    gap: var(--md-sys-spacing-4);
+  }
+}
+
+/* Print: a clean, ink-friendly account inventory. Codes are deliberately
+   omitted — they expire within seconds and would only invite mis-typing. */
+@media print {
+  .app-bar,
+  .nav,
+  .fab,
+  .toolbar,
+  .snackbar-host,
+  .account-card__menu,
+  .account-card__code-row {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .content {
+    padding: 0;
+  }
+}
